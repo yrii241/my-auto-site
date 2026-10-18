@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'My Auto — история вашего автомобиля в одном месте',
+  description = 'My Auto помогает вести историю обслуживания, ремонтов, расходов и заправок автомобиля.',
+} = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = Astro.url.pathname;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#07101f" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content="My Auto" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Перейти к содержанию</a>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="brand" href={`${base}/`} aria-label="My Auto — главная">
+          <span class="brand-mark" aria-hidden="true">M</span>
+          <span>My Auto</span>
+        </a>
+        <nav class="nav" aria-label="Основная навигация">
+          <a href={`${base}/#features`}>Возможности</a>
+          <a href={`${base}/#screens`}>Приложение</a>
+          <a class:list={[{ active: path.includes('/blog') }]} href={`${base}/blog/`}>Блог</a>
+        </nav>
+        <a class="button button-small button-ghost" href={`${base}/#download`}>Скачать</a>
+      </div>
+    </header>
+
+    <main id="content">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <a class="brand" href={`${base}/`}>
+            <span class="brand-mark" aria-hidden="true">M</span>
+            <span>My Auto</span>
+          </a>
+          <p>Спокойствие за рулём начинается с порядка в истории автомобиля.</p>
+        </div>
+        <div class="footer-links">
+          <a href={`${base}/blog/`}>Блог</a>
+          <a href={`${base}/privacy_policy.html`}>Конфиденциальность</a>
+          <a href="mailto:yrikangarski@gmail.com">Поддержка</a>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© {new Date().getFullYear()} My Auto</span>
+        <span>Сделано для тех, кто заботится об автомобиле</span>
+      </div>
+    </footer>
+  </body>
+</html>
