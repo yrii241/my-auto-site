@@ -19,6 +19,20 @@ const features = [
     title: 'Весь гараж в одном месте',
     text: 'Добавляйте автомобили, фиксируйте пробег, VIN, фотографии и основные сведения. Нужная информация всегда под рукой.',
     accent: 'blue',
+    image: garage,
+    imageAlt: 'Экран гаража со списком автомобилей',
+    purpose: 'Создать отдельную цифровую карточку для каждого автомобиля и не смешивать данные разных машин.',
+    situations: [
+      'В семье несколько автомобилей — у каждого будет своя история.',
+      'Нужно быстро найти VIN, номер, год выпуска или актуальный пробег.',
+      'Планируете продать машину и хотите показать аккуратный журнал владения.',
+    ],
+    steps: [
+      'Нажмите «Добавить автомобиль» и укажите основные сведения.',
+      'Добавьте фотографию, VIN и текущий пробег.',
+      'Откройте карточку автомобиля, чтобы перейти к ремонтам, заправкам и статистике.',
+    ],
+    result: 'Вместо заметок и разрозненных фотографий — понятная карточка автомобиля со всей связанной информацией.',
   },
   {
     number: '02',
@@ -26,6 +40,20 @@ const features = [
     title: 'История без пробелов',
     text: 'Записывайте обслуживание и ремонт с датой, стоимостью, пробегом, описанием работ и фотографиями.',
     accent: 'orange',
+    image: repairs,
+    imageAlt: 'Хронология ремонтов и обслуживания',
+    purpose: 'Сохранить полную хронологию обслуживания: что ремонтировали, когда, на каком пробеге и сколько это стоило.',
+    situations: [
+      'Нужно вспомнить дату последней замены масла, ремня или тормозов.',
+      'Неисправность появилась повторно — можно показать сервису предыдущие работы.',
+      'Нужно подтвердить обслуживание фотографиями, чеками или экспортом в PDF.',
+    ],
+    steps: [
+      'Выберите автомобиль и создайте день ремонта.',
+      'Укажите пробег, выполненные работы, стоимость и комментарий.',
+      'Добавьте фотографии деталей или документов — они останутся рядом с записью.',
+    ],
+    result: 'Вы видите последовательную историю работ и принимаете решения на основе фактов, а не памяти.',
   },
   {
     number: '03',
@@ -33,6 +61,20 @@ const features = [
     title: 'Расходы на топливо',
     text: 'Контролируйте заправки, цену литра и общие расходы. Статистика помогает увидеть реальную стоимость владения.',
     accent: 'green',
+    image: fuel,
+    imageAlt: 'Сводка и история заправок',
+    purpose: 'Понимать, сколько топлива и денег действительно требует автомобиль за выбранный период.',
+    situations: [
+      'Хотите видеть общую сумму и количество заправок.',
+      'Сравниваете цены на разных АЗС или расходы за разные месяцы.',
+      'Нужно сохранить пробег, литры, стоимость и заметку по каждой заправке.',
+    ],
+    steps: [
+      'После заправки внесите дату и показания одометра.',
+      'Укажите количество литров, общую стоимость и при необходимости заметку.',
+      'Откройте статистику, чтобы посмотреть сводные показатели и динамику.',
+    ],
+    result: 'Расходы перестают быть набором чеков: приложение собирает их в наглядную историю.',
   },
   {
     number: '04',
@@ -40,6 +82,20 @@ const features = [
     title: 'Умный помощник',
     text: 'Получайте подсказки по эксплуатации автомобиля и разбирайтесь в технических вопросах с AI-ассистентом.',
     accent: 'violet',
+    image: ai,
+    imageAlt: 'Диалог с AI-помощником My Auto',
+    purpose: 'Быстро разобраться в симптомах, терминах и возможных действиях с учётом данных вашего автомобиля.',
+    situations: [
+      'Появился незнакомый звук, индикатор или симптом.',
+      'Нужно подготовить список вопросов перед поездкой в сервис.',
+      'Хотите понять назначение детали или порядок базовой проверки.',
+    ],
+    steps: [
+      'Откройте помощника из карточки нужного автомобиля.',
+      'Опишите ситуацию подробно и при необходимости приложите фотографию.',
+      'Получите объяснение и план следующих действий, затем уточните детали в диалоге.',
+    ],
+    result: 'Вы лучше понимаете проблему и увереннее общаетесь с мастером. Для работы нужен интернет; ответы носят справочный характер и не заменяют диагностику.',
   },
 ];
 
@@ -120,15 +176,68 @@ const screenshots = [
       </div>
       <div class="feature-grid">
         {features.map((feature) => (
-          <article class={`feature-card ${feature.accent}`}>
+          <button
+            class={`feature-card ${feature.accent}`}
+            type="button"
+            data-feature-open={`feature-${feature.number}`}
+            aria-haspopup="dialog"
+            aria-controls={`feature-${feature.number}`}
+          >
             <div class="feature-meta"><span>{feature.icon}</span><small>{feature.number}</small></div>
             <h3>{feature.title}</h3>
             <p>{feature.text}</p>
-          </article>
+            <span class="feature-more">Подробнее <i aria-hidden="true">→</i></span>
+          </button>
         ))}
       </div>
     </div>
   </section>
+
+  {features.map((feature) => (
+    <dialog class={`feature-dialog ${feature.accent}`} id={`feature-${feature.number}`}>
+      <div class="dialog-shell">
+        <button class="dialog-close" type="button" data-feature-close aria-label="Закрыть описание">×</button>
+        <div class="dialog-visual">
+          <div class="dialog-number">{feature.number}</div>
+          <div class="dialog-phone">
+            <Image
+              src={feature.image}
+              alt={feature.imageAlt}
+              widths={[260, 520]}
+              sizes="260px"
+              loading="lazy"
+            />
+          </div>
+        </div>
+        <div class="dialog-content">
+          <div class="dialog-kicker"><span>{feature.icon}</span> Возможность My Auto</div>
+          <h2>{feature.title}</h2>
+          <p class="dialog-purpose">{feature.purpose}</p>
+
+          <div class="dialog-section">
+            <h3>Когда пригодится</h3>
+            <ul class="dialog-list">
+              {feature.situations.map((situation) => <li><span>✓</span>{situation}</li>)}
+            </ul>
+          </div>
+
+          <div class="dialog-section">
+            <h3>Как использовать</h3>
+            <ol class="dialog-steps">
+              {feature.steps.map((step, index) => (
+                <li><span>{index + 1}</span><p>{step}</p></li>
+              ))}
+            </ol>
+          </div>
+
+          <div class="dialog-result">
+            <strong>Что вы получаете</strong>
+            <p>{feature.result}</p>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  ))}
 
   <section class="section showcase" id="screens">
     <div class="container">
@@ -221,6 +330,41 @@ const screenshots = [
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  const openButtons = document.querySelectorAll<HTMLButtonElement>('[data-feature-open]');
+  const dialogs = document.querySelectorAll<HTMLDialogElement>('.feature-dialog');
+
+  openButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const dialogId = button.dataset.featureOpen;
+      const dialog = dialogId ? document.getElementById(dialogId) : null;
+
+      if (dialog instanceof HTMLDialogElement) {
+        dialog.showModal();
+      }
+    });
+  });
+
+  dialogs.forEach((dialog) => {
+    dialog.querySelector<HTMLButtonElement>('[data-feature-close]')?.addEventListener('click', () => {
+      dialog.close();
+    });
+
+    dialog.addEventListener('click', (event) => {
+      const bounds = dialog.getBoundingClientRect();
+      const isBackdrop =
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom;
+
+      if (isBackdrop) {
+        dialog.close();
+      }
+    });
+  });
+</script>
 
 <style>
   .hero {
@@ -479,12 +623,27 @@ const screenshots = [
 
   .feature-card {
     position: relative;
+    display: block;
     overflow: hidden;
+    width: 100%;
     min-height: 300px;
     padding: 34px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: linear-gradient(145deg, rgba(19, 36, 61, 0.88), rgba(10, 22, 40, 0.7));
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .feature-card:hover,
+  .feature-card:focus-visible {
+    border-color: color-mix(in srgb, var(--card-color) 48%, transparent);
+    box-shadow: 0 22px 55px color-mix(in srgb, var(--card-color) 12%, transparent);
+    outline: none;
+    transform: translateY(-4px);
   }
 
   .feature-card::after {
@@ -538,6 +697,248 @@ const screenshots = [
     margin: 0;
     color: var(--muted);
     font-size: 14px;
+  }
+
+  .feature-more {
+    position: absolute;
+    right: 32px;
+    bottom: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--card-color);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .feature-more i {
+    font-size: 17px;
+    font-style: normal;
+    transition: transform 180ms ease;
+  }
+
+  .feature-card:hover .feature-more i {
+    transform: translateX(4px);
+  }
+
+  .feature-dialog {
+    --dialog-color: var(--blue);
+    width: min(1050px, calc(100% - 36px));
+    max-width: none;
+    max-height: min(820px, calc(100dvh - 36px));
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgba(167, 194, 235, 0.2);
+    border-radius: 28px;
+    background: #0b172a;
+    color: var(--text);
+    box-shadow: 0 35px 100px rgba(0, 0, 0, 0.65);
+  }
+
+  .feature-dialog.orange { --dialog-color: var(--orange); }
+  .feature-dialog.green { --dialog-color: var(--green); }
+  .feature-dialog.violet { --dialog-color: #ad80ff; }
+
+  .feature-dialog::backdrop {
+    background: rgba(2, 7, 15, 0.82);
+    backdrop-filter: blur(8px);
+  }
+
+  .dialog-shell {
+    position: relative;
+    display: grid;
+    overflow-y: auto;
+    max-height: min(820px, calc(100dvh - 36px));
+    grid-template-columns: minmax(300px, 0.75fr) minmax(0, 1.25fr);
+  }
+
+  .dialog-close {
+    position: absolute;
+    z-index: 10;
+    top: 18px;
+    right: 18px;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    padding: 0 0 3px;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: rgba(7, 16, 31, 0.82);
+    color: var(--text);
+    cursor: pointer;
+    font: 300 27px/1 system-ui, sans-serif;
+    transition: background 160ms ease, transform 160ms ease;
+  }
+
+  .dialog-close:hover,
+  .dialog-close:focus-visible {
+    background: #1b2f4b;
+    outline: none;
+    transform: rotate(8deg);
+  }
+
+  .dialog-visual {
+    position: sticky;
+    top: 0;
+    display: grid;
+    min-height: 720px;
+    overflow: hidden;
+    place-items: center;
+    background:
+      radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--dialog-color) 30%, transparent), transparent 38%),
+      repeating-linear-gradient(90deg, transparent 0 58px, rgba(255, 255, 255, 0.025) 59px),
+      repeating-linear-gradient(0deg, transparent 0 58px, rgba(255, 255, 255, 0.025) 59px),
+      #081323;
+  }
+
+  .dialog-number {
+    position: absolute;
+    top: 34px;
+    left: 34px;
+    color: color-mix(in srgb, var(--dialog-color) 45%, transparent);
+    font-size: 78px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .dialog-phone {
+    position: relative;
+    z-index: 1;
+    width: 245px;
+    height: 500px;
+    overflow: hidden;
+    border: 7px solid #1b2a40;
+    border-radius: 34px;
+    box-shadow: 0 35px 75px rgba(0, 0, 0, 0.45);
+    transform: rotate(-2deg);
+  }
+
+  .dialog-phone :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .dialog-content {
+    padding: 62px 58px 54px;
+  }
+
+  .dialog-kicker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--dialog-color);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .dialog-kicker span {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--dialog-color) 14%, transparent);
+    font-size: 16px;
+  }
+
+  .dialog-content > h2 {
+    margin: 18px 0 16px;
+    font-size: clamp(35px, 5vw, 52px);
+    line-height: 1.04;
+    letter-spacing: -0.05em;
+  }
+
+  .dialog-purpose {
+    margin: 0;
+    color: #b6c5d9;
+    font-size: 16px;
+  }
+
+  .dialog-section {
+    padding-top: 31px;
+    margin-top: 31px;
+    border-top: 1px solid var(--line);
+  }
+
+  .dialog-section h3 {
+    margin: 0 0 17px;
+    font-size: 17px;
+  }
+
+  .dialog-list,
+  .dialog-steps {
+    display: grid;
+    gap: 13px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .dialog-list li {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .dialog-list li span {
+    color: var(--dialog-color);
+    font-weight: 800;
+  }
+
+  .dialog-steps {
+    counter-reset: steps;
+  }
+
+  .dialog-steps li {
+    display: grid;
+    grid-template-columns: 35px 1fr;
+    align-items: start;
+    gap: 12px;
+  }
+
+  .dialog-steps li > span {
+    display: grid;
+    width: 31px;
+    height: 31px;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--dialog-color) 34%, transparent);
+    border-radius: 9px;
+    color: var(--dialog-color);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .dialog-steps p {
+    padding-top: 4px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .dialog-result {
+    padding: 20px;
+    margin-top: 31px;
+    border: 1px solid color-mix(in srgb, var(--dialog-color) 24%, transparent);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--dialog-color) 8%, transparent);
+  }
+
+  .dialog-result strong {
+    color: var(--dialog-color);
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  .dialog-result p {
+    margin: 7px 0 0;
+    color: #c7d3e4;
+    font-size: 13px;
   }
 
   .showcase {
@@ -910,6 +1311,24 @@ const screenshots = [
       grid-template-columns: 1fr;
     }
 
+    .dialog-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .dialog-visual {
+      position: relative;
+      min-height: 390px;
+    }
+
+    .dialog-phone {
+      width: 185px;
+      height: 355px;
+    }
+
+    .dialog-content {
+      padding: 44px 38px 42px;
+    }
+
     .showcase-heading {
       grid-template-columns: 1fr;
       gap: 0;
@@ -993,6 +1412,51 @@ const screenshots = [
     .feature-card {
       min-height: 280px;
       padding: 27px;
+    }
+
+    .feature-more {
+      right: 26px;
+      bottom: 23px;
+    }
+
+    .feature-dialog {
+      width: calc(100% - 16px);
+      max-height: calc(100dvh - 16px);
+      border-radius: 20px;
+    }
+
+    .dialog-shell {
+      max-height: calc(100dvh - 16px);
+    }
+
+    .dialog-visual {
+      min-height: 310px;
+    }
+
+    .dialog-number {
+      top: 24px;
+      left: 24px;
+      font-size: 58px;
+    }
+
+    .dialog-phone {
+      width: 148px;
+      height: 280px;
+      border-width: 5px;
+      border-radius: 24px;
+    }
+
+    .dialog-close {
+      top: 12px;
+      right: 12px;
+    }
+
+    .dialog-content {
+      padding: 34px 24px 30px;
+    }
+
+    .dialog-content > h2 {
+      font-size: 35px;
     }
 
     .screen-item {
