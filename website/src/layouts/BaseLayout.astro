@@ -1,50 +1,149 @@
 ---
+import { getCollection } from 'astro:content';
 import '../styles/global.css';
+import { chrome, localePath, otherLang, withBase, type Lang } from '../i18n/ui';
 
 interface Props {
   title?: string;
   description?: string;
+  lang?: Lang;
 }
 
-const {
-  title = 'My Auto — история вашего автомобиля в одном месте',
-  description = 'My Auto помогает вести историю обслуживания, ремонтов, расходов и заправок автомобиля.',
-} = Astro.props;
-
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const lang: Lang = Astro.props.lang ?? 'ru';
+const t = chrome[lang];
+const title = Astro.props.title ?? t.metaTitle;
+const description = Astro.props.description ?? t.metaDescription;
+const base = import.meta.env.BASE_URL;
+const prefix = base.replace(/\/$/, '');
 const path = Astro.url.pathname;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+
+function relativePath(pathname: string) {
+  let rest = pathname;
+  if (prefix && rest.startsWith(prefix)) rest = rest.slice(prefix.length) || '/';
+  if (!rest.startsWith('/')) rest = `/${rest}`;
+  if (!rest.endsWith('/') && !rest.includes('.')) rest += '/';
+  return rest;
+}
+
+function pathFor(rest: string, target: Lang, pairs: Record<string, string>) {
+  if (rest.endsWith('privacy_policy.html') || rest.endsWith('privacy_policy.html/')) {
+    return `/privacy_policy.html#${target}`;
+  }
+
+  const mapped = pairs[rest];
+  if (mapped) {
+    const mappedIsEn = mapped === '/en' || mapped.startsWith('/en/');
+    if ((target === 'en') === mappedIsEn) return mapped;
+  }
+
+  const bare = rest.replace(/^\/en(?=\/|$)/, '') || '/';
+  return target === 'en' ? (bare === '/' ? '/en/' : `/en${bare}`) : bare;
+}
+
+const rest = relativePath(path);
+const posts = await getCollection('blog');
+const pairs: Record<string, string> = {};
+
+for (const post of posts) {
+  if (!post.data.translation) continue;
+  pairs[localePath(post.data.lang, `/blog/${post.id}/`)] = localePath(
+    otherLang(post.data.lang),
+    `/blog/${post.data.translation}/`,
+  );
+}
+
+const other = otherLang(lang);
+const home = withBase(base, localePath(lang, '/'));
+const blogHref = withBase(base, localePath(lang, '/blog/'));
+const switchHref = withBase(base, pathFor(rest, other, pairs));
+const ruHref = withBase(base, pathFor(rest, 'ru', pairs).split('#')[0]);
+const enHref = withBase(base, pathFor(rest, 'en', pairs).split('#')[0]);
+const privacyHref = `${withBase(base, '/privacy_policy.html')}#${lang}`;
+const canonical = new URL(path, Astro.site ?? Astro.url.origin);
+const ruAbsolute = new URL(ruHref, Astro.site ?? Astro.url.origin);
+const enAbsolute = new URL(enHref, Astro.site ?? Astro.url.origin);
 ---
 
 <!doctype html>
-<html lang="ru">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="theme-color" content="#07111f" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <link rel="alternate" hreflang="ru" href={ruAbsolute} />
+    <link rel="alternate" hreflang="en" href={enAbsolute} />
+    <link rel="alternate" hreflang="x-default" href={ruAbsolute} />
+    <link rel="icon" type="image/svg+xml" href={`${prefix}/favicon.svg`} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'ru_RU'} />
+    <meta property="og:locale:alternate" content={lang === 'en' ? 'ru_RU' : 'en_US'} />
     <meta property="og:site_name" content="My Auto" />
     <title>{title}</title>
+    <script is:inline define:vars={{ lang, prefix, pairs }}>
+      const key = 'app_language';
+      try {
+        const saved = localStorage.getItem(key);
+        if ((saved === 'ru' || saved === 'en') && saved !== lang) {
+          let rest = location.pathname;
+          if (prefix && rest.startsWith(prefix)) rest = rest.slice(prefix.length) || '/';
+          if (!rest.startsWith('/')) rest = `/${rest}`;
+          if (!rest.endsWith('/') && !rest.includes('.')) rest += '/';
+
+          let next = pairs[rest] || '';
+          if (next) {
+            const mappedIsEn = next === '/en' || next.startsWith('/en/');
+            if ((saved === 'en') !== mappedIsEn) next = '';
+          }
+          if (!next) {
+            if (rest.endsWith('privacy_policy.html') || rest.endsWith('privacy_policy.html/')) {
+              next = '/privacy_policy.html';
+            } else {
+              const bare = rest.replace(/^\/en(?=\/|$)/, '') || '/';
+              next = saved === 'en' ? (bare === '/' ? '/en/' : `/en${bare}`) : bare;
+            }
+          }
+
+          const destPath = `${prefix}${next}`;
+          const here = location.pathname.endsWith('/') || location.pathname.includes('.')
+            ? location.pathname
+            : `${location.pathname}/`;
+          const destNorm = destPath.endsWith('/') || destPath.includes('.') ? destPath : `${destPath}/`;
+          if (here !== destNorm) {
+            const hash = next.endsWith('.html') ? `#${saved}` : location.hash;
+            location.replace(destPath + location.search + hash);
+          }
+        }
+      } catch (error) {
+        /* Preference is optional. The page stays on the opened address. */
+      }
+    </script>
   </head>
   <body>
-    <a class="skip-link" href="#content">Перейти к содержанию</a>
+    <a class="skip-link" href="#content">{t.skip}</a>
     <header class="site-header">
       <div class="container nav-wrap">
-        <a class="brand" href={`${base}/`} aria-label="My Auto — главная">
+        <a class="brand" href={home} aria-label={t.homeLabel}>
           My<span class="brand-accent">Auto</span>
         </a>
-        <nav class="nav" aria-label="Основная навигация">
-          <a href={`${base}/#features`}>Возможности</a>
-          <a href={`${base}/#screens`}>Приложение</a>
-          <a class:list={[{ active: path.includes('/blog') }]} href={`${base}/blog/`}>Блог</a>
+        <nav class="nav" aria-label={t.navLabel}>
+          <a href={`${home}#features`}>{t.features}</a>
+          <a href={`${home}#screens`}>{t.app}</a>
+          <a class:list={[{ active: path.includes('/blog') }]} href={blogHref}>{t.blog}</a>
         </nav>
-        <a class="button button-small" href={`${base}/#download`}>Скачать</a>
+        <div class="header-actions">
+          <a class="lang-chip" href={switchHref} data-set-lang={other} aria-label={t.langLabel}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+              <path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9s-1.3 6.2-3.8 9c-2.5-2.8-3.8-5.8-3.8-9s1.3-6.2 3.8-9Z" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+            </svg>
+            {lang === 'en' ? 'EN' : 'RU'}
+          </a>
+          <a class="button button-small" href={`${home}#download`}>{t.download}</a>
+        </div>
       </div>
     </header>
 
@@ -55,21 +154,31 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <footer class="site-footer">
       <div class="container footer-grid">
         <div>
-          <a class="brand" href={`${base}/`}>
+          <a class="brand" href={home}>
             My<span class="brand-accent">Auto</span>
           </a>
-          <p>Спокойствие за рулём начинается с порядка в истории автомобиля.</p>
+          <p>{t.tagline}</p>
         </div>
         <div class="footer-links">
-          <a href={`${base}/blog/`}>Блог</a>
-          <a href={`${base}/privacy_policy.html`}>Конфиденциальность</a>
-          <a href="mailto:yrikangarski@gmail.com">Поддержка</a>
+          <a href={blogHref}>{t.blog}</a>
+          <a href={privacyHref}>{t.privacy}</a>
+          <a href="mailto:yrikangarski@gmail.com">{t.support}</a>
         </div>
       </div>
       <div class="container footer-bottom">
         <span>© {new Date().getFullYear()} My Auto</span>
-        <span>Сделано для тех, кто заботится об автомобиле</span>
+        <span>{t.footerNote}</span>
       </div>
     </footer>
+    <script>
+      const key = 'app_language';
+      document.querySelectorAll<HTMLAnchorElement>('[data-set-lang]').forEach((link) => {
+        link.addEventListener('click', () => {
+          const value = link.dataset.setLang;
+          if (value === 'ru' || value === 'en') localStorage.setItem(key, value);
+          if (location.hash && !link.hash) link.hash = location.hash;
+        });
+      });
+    </script>
   </body>
 </html>

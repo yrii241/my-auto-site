@@ -10,6 +10,9 @@ const blog = defineCollection({
     publishedAt: z.coerce.date(),
     readingTime: z.string().default('4 мин'),
     featured: z.boolean().default(false),
+    lang: z.enum(['ru', 'en']).default('ru'),
+    category: z.string().default(''),
+    translation: z.string().optional(),
   }),
 });
 
