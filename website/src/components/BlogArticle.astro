@@ -1,0 +1,124 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { chrome, dateLocale, localePath, withBase, type Lang } from '../i18n/ui';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const lang = post.data.lang as Lang;
+const t = chrome[lang];
+const { Content } = await render(post);
+const base = import.meta.env.BASE_URL;
+const publishedAt = new Intl.DateTimeFormat(dateLocale(lang), {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(post.data.publishedAt);
+const playUrl = 'https://play.google.com/store/apps/details?id=com.urijakusenko.myauto';
+---
+
+<BaseLayout lang={lang} title={`${post.data.title} — My Auto`} description={post.data.description}>
+  <article>
+    <header class="article-header container">
+      <a class="back-link" href={withBase(base, localePath(lang, '/blog/'))}>{t.backToBlog}</a>
+      <div class="article-meta">
+        <time datetime={post.data.publishedAt.toISOString()}>{publishedAt}</time>
+        <span>{post.data.readingTime}</span>
+      </div>
+      <h1>{post.data.title}</h1>
+      <p>{post.data.description}</p>
+    </header>
+    <div class="article-divider container"><span></span></div>
+    <div class="prose">
+      <Content />
+      <div class="article-cta">
+        <strong>{t.ctaTitle}</strong>
+        <p>{t.ctaText}</p>
+        <a href={playUrl} target="_blank" rel="noopener">{t.ctaLink}</a>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .article-header {
+    max-width: 930px;
+    padding-top: 80px;
+    text-align: center;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 55px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .article-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    color: var(--blue-light);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 20px auto;
+    font-size: clamp(40px, 6.5vw, 76px);
+    line-height: 1.04;
+    letter-spacing: -0.055em;
+  }
+
+  .article-header > p {
+    max-width: 690px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  .article-divider {
+    display: flex;
+    justify-content: center;
+    margin-top: 58px;
+    border-top: 1px solid var(--line);
+  }
+
+  .article-divider span {
+    width: 100px;
+    height: 2px;
+    background: var(--blue);
+  }
+
+  .article-cta {
+    margin-top: 70px;
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--panel);
+  }
+
+  .article-cta strong {
+    font-size: 20px;
+  }
+
+  .article-cta p {
+    margin: 7px 0 16px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .article-cta a {
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+</style>
