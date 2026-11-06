@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yrii241.github.io/my-auto-site/sitemap.xml
